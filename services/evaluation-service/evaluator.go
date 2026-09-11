@@ -111,7 +111,9 @@ func (a *App) fetchFlag(flagName string) (*Flag, error) {
 	apiKey := os.Getenv("SERVICE_API_KEY")
 	req, _ := http.NewRequest("GET", reqURL, nil)
 	req.Header.Set("Authorization", "Bearer "+apiKey)
-	
+
+	// #nosec G704 -- host fixo (a.FlagServiceURL, config interna), só o segmento
+	// de path vem do cliente e já passou por url.PathEscape acima.
 	resp, err := a.HttpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("erro ao chamar flag-service: %w", err)
@@ -138,7 +140,9 @@ func (a *App) fetchRule(flagName string) (*TargetingRule, error) {
 	apiKey := os.Getenv("SERVICE_API_KEY") // Usa a mesma chave
 	req, _ := http.NewRequest("GET", reqURL, nil)
 	req.Header.Set("Authorization", "Bearer "+apiKey)
-	
+
+	// #nosec G704 -- host fixo (a.TargetingServiceURL, config interna), só o
+	// segmento de path vem do cliente e já passou por url.PathEscape acima.
 	resp, err := a.HttpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("erro ao chamar targeting-service: %w", err)
