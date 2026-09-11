@@ -93,20 +93,26 @@ região `us-east-1`).
 - [x] Terraform aplicado (VPC, EKS 1.36, 3 RDS, Redis, DynamoDB, SQS, 5 ECR, IAM/OIDC)
 - [x] ArgoCD e External Secrets Operator rodando no cluster
 - [x] Tabelas dos 3 bancos inicializadas
-- [x] OIDC do GitHub Actions atualizado pra confiar neste monorepo (`tech-challenge-3`)
-- [x] Credencial do ArgoCD pro repositório privado atualizada pra apontar pra cá
-- [x] As 6 `Application` do ArgoCD atualizadas (repoURL + path novos)
+- [x] OIDC do GitHub Actions confiando neste monorepo (`tech-challenge-3`) — teve que
+      ser ajustado pra aceitar o novo formato do `sub` claim do GitHub, que passou a
+      incluir IDs numéricos imutáveis (`repo:org@123/repo@456:...`)
+- [x] Credencial do ArgoCD pro repositório privado configurada
+- [x] As 6 `Application` do ArgoCD sincronizadas (`Synced`)
+- [x] Repositório publicado no GitHub (`Giovani-AJ/tech-challenge-3`, privado)
+- [x] `AWS_GITHUB_ACTIONS_ROLE_ARN` configurada como repository variable
+- [x] Os 5 pipelines de CI passam 100% (build → lint → SAST/SCA → docker build+scan+push
+      → atualização automática do gitops/) — corrigidos no processo: go.sum corrompido,
+      versão errada do trivy-action, CVE crítica no runtime Go 1.21, SSRF taint (gosec)
+      no evaluation-service, e ~50 violações reais de flake8 nos 3 serviços Python
+- [x] Bootstrap da `SERVICE_API_KEY` do evaluation-service
+- [x] **Teste de ponta a ponta validado**: criar flag → avaliar (evaluation-service,
+      com cache Redis) → evento assíncrono via SQS → analytics-service grava no
+      DynamoDB. Os 9 pods (2 réplicas x 4 serviços + 1 do analytics) estão `Running`.
 
 Pendente:
 
-- [ ] Publicar este repositório no GitHub (`Giovani-AJ/tech-challenge-3`, privado)
-- [ ] Configurar `AWS_GITHUB_ACTIONS_ROLE_ARN` como **repository variable** — uma
-      vez só, já que agora é um repositório único (valor:
-      `arn:aws:iam::681447159486:role/togglemaster-dev-github-actions-ci`)
-- [ ] Primeiro push real disparando o pipeline de CI/DevSecOps (os pods atualmente
-      estão em `ErrImagePull` porque a tag `v1.0.0-init` nunca foi construída de verdade)
-- [ ] Bootstrap da `SERVICE_API_KEY` do evaluation-service
-- [ ] Vídeo de demonstração + relatório de entrega
+- [ ] Vídeo de demonstração
+- [ ] Relatório de entrega (`docs/relatorio-entrega.md`)
 
 ## Retomando em outra máquina
 
