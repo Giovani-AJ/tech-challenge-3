@@ -1,0 +1,6 @@
+# Segredos/artefatos locais que nunca devem ser versionados.
+*.env
+.env
+token.txt
+*.pem
+*.key

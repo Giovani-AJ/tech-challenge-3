@@ -1,0 +1,16 @@
+# REDIS_URL e AWS_SQS_URL vêm dos outputs do Terraform (redis_endpoint / sqs_queue_url).
+# Nenhum dos dois é sensível (Redis sem auth nesta versão, URL de fila não é segredo),
+# por isso ficam em ConfigMap e não em ExternalSecret — mas ainda assim precisam ser
+# substituídos manualmente após o `terraform apply` (ver docs/RUNBOOK.md).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: evaluation-config
+  namespace: toggle-master
+data:
+  PORT: "8004"
+  FLAG_SERVICE_URL: "http://flag-service:8002"
+  TARGETING_SERVICE_URL: "http://targeting-service:8003"
+  AWS_REGION: "us-east-1"
+  REDIS_URL: "redis://togglemaster-dev-redis.2sqrvb.0001.use1.cache.amazonaws.com:6379"
+  AWS_SQS_URL: "https://sqs.us-east-1.amazonaws.com/681447159486/togglemaster-dev-evaluation-events"

@@ -1,0 +1,22 @@
+# Aplique esta primeiro (kubectl apply -f) — cria o namespace toggle-master e o
+# ClusterSecretStore que todos os ExternalSecret dos microsserviços dependem.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: togglemaster-cluster-resources
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Giovani-AJ/tech-challenge-3.git
+    targetRevision: HEAD
+    path: gitops/cluster-resources
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: toggle-master
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false

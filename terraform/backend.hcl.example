@@ -1,0 +1,10 @@
+## Copie para backend.hcl (git-ignorado) e preencha com o output "backend_hcl"
+## do terraform/bootstrap depois de rodar o apply lá.
+##
+## terraform init -backend-config=backend.hcl
+
+bucket       = "togglemaster-tfstate-XXXXXXXX"
+key          = "togglemaster/terraform.tfstate"
+region       = "us-east-1"
+encrypt      = true
+use_lockfile = true
