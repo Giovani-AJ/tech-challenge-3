@@ -109,12 +109,12 @@ func (a *App) fetchFlag(flagName string) (*Flag, error) {
 	reqURL := fmt.Sprintf("%s/flags/%s", a.FlagServiceURL, url.PathEscape(flagName))
 
 	apiKey := os.Getenv("SERVICE_API_KEY")
-	req, _ := http.NewRequest("GET", reqURL, nil)
-	req.Header.Set("Authorization", "Bearer "+apiKey)
-
 	// Host fixo (a.FlagServiceURL, config interna); só o segmento de path vem
 	// do cliente, e já passou por url.PathEscape acima.
-	resp, err := a.HttpClient.Do(req) // #nosec G704
+	req, _ := http.NewRequest("GET", reqURL, nil) // #nosec G704
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+
+	resp, err := a.HttpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("erro ao chamar flag-service: %w", err)
 	}
@@ -138,12 +138,12 @@ func (a *App) fetchFlag(flagName string) (*Flag, error) {
 func (a *App) fetchRule(flagName string) (*TargetingRule, error) {
 	reqURL := fmt.Sprintf("%s/rules/%s", a.TargetingServiceURL, url.PathEscape(flagName))
 	apiKey := os.Getenv("SERVICE_API_KEY") // Usa a mesma chave
-	req, _ := http.NewRequest("GET", reqURL, nil)
-	req.Header.Set("Authorization", "Bearer "+apiKey)
-
 	// Host fixo (a.TargetingServiceURL, config interna); só o segmento de path
 	// vem do cliente, e já passou por url.PathEscape acima.
-	resp, err := a.HttpClient.Do(req) // #nosec G704
+	req, _ := http.NewRequest("GET", reqURL, nil) // #nosec G704
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+
+	resp, err := a.HttpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("erro ao chamar targeting-service: %w", err)
 	}
