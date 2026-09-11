@@ -4,3 +4,7 @@
 token.txt
 *.pem
 *.key
+
+# Binários compilados localmente (ex: `go build` sem -o em services/*)
+services/*/*.exe
+services/*/*-service
