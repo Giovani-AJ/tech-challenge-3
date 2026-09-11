@@ -28,7 +28,10 @@ resource "aws_iam_role" "github_actions" {
           "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
         }
         StringLike = {
-          "token.actions.githubusercontent.com:sub" = "repo:${var.github_org}/${var.github_repo}:*"
+          # O GitHub agora anexa IDs numéricos imutáveis de org/repo no sub claim
+          # (ex: repo:org@123/repo@456:ref:...), além do formato clássico sem eles.
+          # O curinga cobre os dois formatos.
+          "token.actions.githubusercontent.com:sub" = "repo:${var.github_org}*/${var.github_repo}*:*"
         }
       }
     }]
