@@ -125,3 +125,29 @@ resource "aws_eks_node_group" "default" {
     aws_iam_role_policy_attachment.node_ecr,
   ]
 }
+
+## O EKS já sobe o VPC CNI sozinho no bootstrap do cluster, mas como um add-on
+## "implícito" (não gerenciado pelo Terraform nem pela API de add-ons da AWS —
+## por isso nunca aparece em `aws eks list-addons`). Isso funciona para
+## rede básica, mas o enforcement de NetworkPolicy (o eBPF que efetivamente
+## bloqueia tráfego, não só o CRD) só liga com enableNetworkPolicy=true na
+## configuração do add-on. Descoberto na prática: os 5 NetworkPolicy do
+## gitops/apps/ existiam e o CRD estava instalado, mas um pod em outro
+## namespace ainda conseguia chamar os serviços diretamente — o controller que
+## traduz NetworkPolicy em regra aplicada (amazon-network-policy-controller-k8s)
+## nunca tinha sido instalado. Adotar o add-on via Terraform (em vez de deixar
+## implícito) resolve isso e também tira a versão do CNI do controle "manual"
+## da AWS.
+resource "aws_eks_addon" "vpc_cni" {
+  cluster_name = aws_eks_cluster.this.name
+  addon_name   = "vpc-cni"
+
+  configuration_values = jsonencode({
+    enableNetworkPolicy = "true"
+  })
+
+  resolve_conflicts_on_create = "OVERWRITE"
+  resolve_conflicts_on_update = "OVERWRITE"
+
+  depends_on = [aws_eks_node_group.default]
+}
