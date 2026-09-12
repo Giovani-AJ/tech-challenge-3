@@ -107,10 +107,29 @@ região `us-east-1`).
 - [x] Bootstrap da `SERVICE_API_KEY` do evaluation-service
 - [x] **Teste de ponta a ponta validado**: criar flag → avaliar (evaluation-service,
       com cache Redis) → evento assíncrono via SQS → analytics-service grava no
-      DynamoDB. Os 9 pods (2 réplicas x 4 serviços + 1 do analytics) estão `Running`.
+      DynamoDB.
+- [x] **Gaps da Fase 2 fechados** (cruzados contra o PDF original, que ainda se
+      aplica porque é o mesmo código dos 5 microsserviços):
+  - Cada microsserviço ganhou seu **próprio namespace** (antes todos compartilhavam
+    `toggle-master`) — exigiu ajustar o DNS interno pra FQDN cross-namespace
+    (`<service>.<namespace>.svc.cluster.local`)
+  - **metrics-server** instalado (Terraform/Helm)
+  - **HPA por CPU** no `evaluation-service` (requisito mínimo da Fase 2)
+  - **KEDA** escalando o `analytics-service` pela profundidade real da fila SQS
+    (0 a N réplicas) — testado escalando de fato ao enviar um evento real
+  - **ingress-nginx** instalado com roteamento por path (`/auth`, `/flags`,
+    `/targeting`, `/evaluate`, `/analytics`) — configuração validada e sincronizada
+    pelo ArgoCD; falta só a exposição pública de verdade (ver pendências)
+  - **`docker-compose.yml`** na raiz com os 5 serviços + 2 Postgres + Redis +
+    DynamoDB Local
 
 Pendente:
 
+- [ ] **NLB do ingress-nginx**: a criação do Load Balancer está bloqueada pela AWS
+      (`OperationNotPermitted: This AWS account currently does not support
+      creating load balancers`) — restrição comum em conta nova, some sozinha
+      com o tempo/uso ou via chamado no AWS Support. Enquanto isso, o roteamento
+      por path pode ser demonstrado via `kubectl port-forward` no controller.
 - [ ] Vídeo de demonstração
 - [ ] Relatório de entrega (`docs/relatorio-entrega.md`)
 
