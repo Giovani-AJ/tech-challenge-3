@@ -19,15 +19,15 @@ module "network" {
 module "eks" {
   source = "./modules/eks"
 
-  name_prefix          = local.name_prefix
-  cluster_name         = local.cluster_name
-  cluster_version      = var.eks_cluster_version
-  public_subnet_ids    = module.network.public_subnet_ids
-  private_subnet_ids   = module.network.private_subnet_ids
-  node_instance_types  = var.node_instance_types
-  node_desired_size    = var.node_desired_size
-  node_min_size        = var.node_min_size
-  node_max_size        = var.node_max_size
+  name_prefix         = local.name_prefix
+  cluster_name        = local.cluster_name
+  cluster_version     = var.eks_cluster_version
+  public_subnet_ids   = module.network.public_subnet_ids
+  private_subnet_ids  = module.network.private_subnet_ids
+  node_instance_types = var.node_instance_types
+  node_desired_size   = var.node_desired_size
+  node_min_size       = var.node_min_size
+  node_max_size       = var.node_max_size
 }
 
 # --- Bancos de dados: 3 instâncias RDS PostgreSQL (Requisito 1.3) ---
@@ -36,26 +36,26 @@ module "auth_db" {
   source = "./modules/rds"
 
   identifier                 = "${local.name_prefix}-auth-db"
-  service_name                = "auth-service"
-  db_name                     = "auth"
-  instance_class               = var.db_instance_class
-  vpc_id                       = module.network.vpc_id
-  private_subnet_ids           = module.network.private_subnet_ids
-  eks_node_security_group_id   = module.eks.cluster_security_group_id
-  secret_prefix                = local.secret_prefix
+  service_name               = "auth-service"
+  db_name                    = "auth"
+  instance_class             = var.db_instance_class
+  vpc_id                     = module.network.vpc_id
+  private_subnet_ids         = module.network.private_subnet_ids
+  eks_node_security_group_id = module.eks.cluster_security_group_id
+  secret_prefix              = local.secret_prefix
 }
 
 module "flag_db" {
   source = "./modules/rds"
 
   identifier                 = "${local.name_prefix}-flag-db"
-  service_name                = "flag-service"
-  db_name                     = "flagdb"
-  instance_class               = var.db_instance_class
-  vpc_id                       = module.network.vpc_id
-  private_subnet_ids           = module.network.private_subnet_ids
-  eks_node_security_group_id   = module.eks.cluster_security_group_id
-  secret_prefix                = local.secret_prefix
+  service_name               = "flag-service"
+  db_name                    = "flagdb"
+  instance_class             = var.db_instance_class
+  vpc_id                     = module.network.vpc_id
+  private_subnet_ids         = module.network.private_subnet_ids
+  eks_node_security_group_id = module.eks.cluster_security_group_id
+  secret_prefix              = local.secret_prefix
 }
 
 ## MASTER_KEY do auth-service não é credencial de banco (é um segredo de aplicação),
@@ -97,13 +97,13 @@ module "targeting_db" {
   source = "./modules/rds"
 
   identifier                 = "${local.name_prefix}-targeting-db"
-  service_name                = "targeting-service"
-  db_name                     = "targeting"
-  instance_class               = var.db_instance_class
-  vpc_id                       = module.network.vpc_id
-  private_subnet_ids           = module.network.private_subnet_ids
-  eks_node_security_group_id   = module.eks.cluster_security_group_id
-  secret_prefix                = local.secret_prefix
+  service_name               = "targeting-service"
+  db_name                    = "targeting"
+  instance_class             = var.db_instance_class
+  vpc_id                     = module.network.vpc_id
+  private_subnet_ids         = module.network.private_subnet_ids
+  eks_node_security_group_id = module.eks.cluster_security_group_id
+  secret_prefix              = local.secret_prefix
 }
 
 # --- Redis (Requisito 1.3) ---
@@ -147,10 +147,10 @@ module "ecr" {
 module "github_oidc" {
   source = "./modules/github-oidc"
 
-  name_prefix          = local.name_prefix
-  github_org           = var.github_org
-  github_repo          = var.github_source_repo
-  ecr_repository_arns  = values(module.ecr.repository_arns)
+  name_prefix         = local.name_prefix
+  github_org          = var.github_org
+  github_repo         = var.github_source_repo
+  ecr_repository_arns = values(module.ecr.repository_arns)
 }
 
 # --- External Secrets Operator: IRSA + instalação via Helm ---
@@ -158,17 +158,17 @@ module "github_oidc" {
 module "eso_irsa" {
   source = "./modules/irsa"
 
-  role_name             = "${local.name_prefix}-external-secrets"
-  namespace             = "external-secrets"
-  service_account_name  = "external-secrets"
-  oidc_provider_arn     = module.eks.oidc_provider_arn
-  oidc_provider_url     = module.eks.oidc_provider_url
+  role_name            = "${local.name_prefix}-external-secrets"
+  namespace            = "external-secrets"
+  service_account_name = "external-secrets"
+  oidc_provider_arn    = module.eks.oidc_provider_arn
+  oidc_provider_url    = module.eks.oidc_provider_url
 
   policy_json = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Effect = "Allow"
-      Action = ["secretsmanager:GetSecretValue", "secretsmanager:DescribeSecret"]
+      Effect   = "Allow"
+      Action   = ["secretsmanager:GetSecretValue", "secretsmanager:DescribeSecret"]
       Resource = "arn:aws:secretsmanager:${var.aws_region}:*:secret:${local.secret_prefix}/*"
     }]
   })
@@ -211,11 +211,11 @@ module "ingress_nginx" {
 module "keda_irsa" {
   source = "./modules/irsa"
 
-  role_name             = "${local.name_prefix}-keda-operator"
-  namespace             = "keda"
-  service_account_name  = "keda-operator"
-  oidc_provider_arn     = module.eks.oidc_provider_arn
-  oidc_provider_url     = module.eks.oidc_provider_url
+  role_name            = "${local.name_prefix}-keda-operator"
+  namespace            = "keda"
+  service_account_name = "keda-operator"
+  oidc_provider_arn    = module.eks.oidc_provider_arn
+  oidc_provider_url    = module.eks.oidc_provider_url
 
   policy_json = jsonencode({
     Version = "2012-10-17"
@@ -231,6 +231,14 @@ module "keda" {
   source = "./modules/keda"
 
   irsa_role_arn = module.keda_irsa.role_arn
+
+  depends_on = [module.eks]
+}
+
+# --- Prometheus + Grafana: observabilidade (enriquecimento além do mínimo pedido) ---
+
+module "monitoring" {
+  source = "./modules/monitoring"
 
   depends_on = [module.eks]
 }

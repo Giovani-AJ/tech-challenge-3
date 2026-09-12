@@ -34,8 +34,13 @@ variable "node_instance_types" {
 }
 
 variable "node_desired_size" {
-  type    = number
-  default = 2
+  type = number
+  # 3 (não 2): com metrics-server + ingress-nginx + KEDA + Prometheus/Grafana
+  # rodando, 2 nós de t3.medium (17 pods alocáveis cada, limite de ENI/IP da
+  # instância, não de CPU/memória) já deixavam quase nenhuma folga pro HPA do
+  # evaluation-service ou o KEDA do analytics-service realmente escalarem até
+  # o teto durante a demonstração.
+  default = 3
 }
 
 variable "node_min_size" {
@@ -72,7 +77,7 @@ variable "github_source_repo" {
 
 variable "ecr_repository_names" {
   description = "Um repositório ECR por microsserviço (independe de como o código-fonte está organizado em repos Git)"
-  type = list(string)
+  type        = list(string)
   default = [
     "auth-service",
     "flag-service",

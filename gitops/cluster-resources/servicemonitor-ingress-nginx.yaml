@@ -1,0 +1,21 @@
+# Prometheus (instalado via Terraform, módulo "monitoring") descobre este
+# ServiceMonitor automaticamente (serviceMonitorSelectorNilUsesHelmValues=false,
+# ver módulo) e passa a raspar métricas que o ingress-nginx já expõe desde que foi
+# instalado (controller.metrics.enabled=true), mas que até agora ninguém consumia.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: ingress-nginx-controller
+  namespace: ingress-nginx
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: controller
+      app.kubernetes.io/instance: ingress-nginx
+      app.kubernetes.io/name: ingress-nginx
+  namespaceSelector:
+    matchNames:
+      - ingress-nginx
+  endpoints:
+    - port: metrics
+      interval: 30s

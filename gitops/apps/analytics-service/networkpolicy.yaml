@@ -1,0 +1,20 @@
+# Mesmo racional do auth-service/networkpolicy.yaml. analytics-service não é
+# chamado por nenhum outro microsserviço (consome SQS de forma assíncrona) — só
+# o ingress-nginx (rota pública /analytics) precisa de acesso de entrada.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: analytics-service-ingress
+  namespace: analytics-service
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8005

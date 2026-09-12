@@ -1,0 +1,35 @@
+# Segmentação de rede por namespace: nega todo tráfego de entrada por padrão
+# (policyTypes: Ingress + nenhuma regra "from" = deny-all) e libera explicitamente
+# só quem tem motivo real de chamar o auth-service — flag-service e
+# targeting-service (validam API key via AUTH_SERVICE_URL) e o ingress-nginx
+# (rota pública /auth). evaluation-service e analytics-service NÃO estão na
+# lista de propósito: nenhum dos dois chama auth-service.
+#
+# Egress fica sem restrição de propósito: o alvo de saída (RDS) é um serviço
+# gerenciado da AWS com IP dinâmico dentro da VPC — restringir isso por
+# NetworkPolicy exigiria manter um CIDR sincronizado manualmente, e essa
+# segurança já é feita pelos Security Groups da VPC, camada mais adequada pra
+# isso. O ganho real de segurança está em quem PODE CHAMAR cada serviço.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: auth-service-ingress
+  namespace: auth-service
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: flag-service
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: targeting-service
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8001

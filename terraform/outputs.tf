@@ -17,9 +17,9 @@ output "github_actions_role_arn" {
 
 output "rds_endpoints" {
   value = {
-    auth       = module.auth_db.endpoint
-    flag       = module.flag_db.endpoint
-    targeting  = module.targeting_db.endpoint
+    auth      = module.auth_db.endpoint
+    flag      = module.flag_db.endpoint
+    targeting = module.targeting_db.endpoint
   }
 }
 
@@ -67,4 +67,9 @@ output "eso_irsa_role_arn" {
 output "ingress_load_balancer_hostname" {
   description = "Hostname do NLB do ingress-nginx (pode levar alguns minutos pra existir após o apply)"
   value       = module.ingress_nginx.load_balancer_hostname
+}
+
+output "grafana_access_hint" {
+  description = "Grafana fica atrás de ClusterIP (mesmo motivo do ArgoCD: evitar outro Load Balancer) — acesse via port-forward"
+  value       = "kubectl port-forward -n monitoring svc/kube-prometheus-stack-grafana 3000:80"
 }
