@@ -8,3 +8,6 @@ token.txt
 # Binários compilados localmente (ex: `go build` sem -o em services/*)
 services/*/*.exe
 services/*/*-service
+
+# Notas pessoais de apresentação — não fazem parte da entrega do grupo.
+docs/roteiro-apresentacao-giovani.md
