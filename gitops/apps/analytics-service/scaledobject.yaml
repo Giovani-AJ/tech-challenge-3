@@ -19,7 +19,7 @@ spec:
   triggers:
     - type: aws-sqs-queue
       metadata:
-        queueURL: "<SQS_QUEUE_URL>"
+        queueURL: "https://sqs.us-east-1.amazonaws.com/681447159486/togglemaster-dev-evaluation-events"
         queueLength: "5"
         awsRegion: "us-east-1"
         identityOwner: operator

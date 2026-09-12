@@ -15,6 +15,12 @@ resource "helm_release" "ingress_nginx" {
   version    = var.chart_version
   namespace  = kubernetes_namespace.this.metadata[0].name
 
+  # Não espera o Service type=LoadBalancer ficar pronto: a criação do NLB pode
+  # ficar pendente por tempo indeterminado (restrição de conta nova na AWS),
+  # e isso não deveria travar os hooks do chart (geração do certificado do
+  # admission webhook), que rodam independente do LB existir ou não.
+  wait = false
+
   set {
     name  = "controller.service.type"
     value = "LoadBalancer"
