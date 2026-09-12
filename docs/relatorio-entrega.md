@@ -104,6 +104,27 @@ verdade contra uma conta AWS e um GitHub real — não são hipotéticos:
 - **~50 violações reais de estilo (flake8)** nos três serviços em Python (linhas em
   branco faltando entre funções, `if x: y` numa linha só, espaçamento de comentário
   inline) — nunca tinham sido pegas porque não havia pipeline de lint antes.
+- **NetworkPolicy "fantasma" — CRD presente, enforcement desligado**: depois de
+  criar uma `NetworkPolicy` por namespace (deny-all de ingress + liberação
+  explícita só de quem realmente chama cada serviço), testamos de propósito
+  criando um pod num namespace sem permissão e chamando um serviço diretamente
+  — e a chamada funcionou normalmente, como se a política nem existisse. O CRD
+  estava instalado e o objeto `NetworkPolicy` existia, mas o VPC CNI do EKS
+  sobe sozinho no bootstrap do cluster como um add-on "implícito" (nem aparece
+  em `aws eks list-addons`), e nesse modo o componente que efetivamente traduz
+  `NetworkPolicy` em regra de rede bloqueada (eBPF) vem **desligado por
+  padrão** — só o objeto do Kubernetes existia, sem nenhum efeito real. Só foi
+  possível perceber isso testando de verdade (não bastava o `kubectl apply`
+  "funcionar" sem erro). Corrigido adotando o `vpc-cni` como `aws_eks_addon`
+  gerenciado pelo Terraform com `enableNetworkPolicy=true`; revalidado depois
+  com o mesmo teste, agora recebendo timeout como esperado.
+- **Cota de pods por nó, não por CPU/memória**: ao adicionar Prometheus/Grafana
+  além do que já rodava (metrics-server, ingress-nginx, KEDA), o cluster
+  chegou perto do limite de pods dos nós `t3.medium` mesmo com CPU/memória
+  sobrando — o limite real é o número de ENI/IP que a instância suporta
+  (~17 pods/nó), não recurso computacional. Resolvido escalando o node group
+  de 2 para 3 nós, dando folga real pro HPA e o KEDA escalarem até o teto
+  configurado durante a demonstração sem pods ficarem `Pending`.
 
 ### Trade-offs assumidos por custo/tempo de laboratório
 

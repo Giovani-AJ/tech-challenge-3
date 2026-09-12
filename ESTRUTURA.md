@@ -123,6 +123,41 @@ região `us-east-1`).
   - **`docker-compose.yml`** na raiz com os 5 serviços + 2 Postgres + Redis +
     DynamoDB Local
 
+- [x] **Enriquecimentos adicionais** (além do escopo mínimo pedido, feitos
+      por iniciativa própria):
+  - **NetworkPolicy por namespace** (`gitops/apps/<service>/networkpolicy.yaml`):
+    cada microsserviço nega todo tráfego de entrada por padrão e libera
+    explicitamente só quem tem motivo real de chamá-lo (mapeado a partir das
+    URLs reais usadas nos ConfigMap — ex: só flag-service, targeting-service
+    e o ingress-nginx podem falar com o auth-service). Egress fica sem
+    restrição de propósito: os alvos (RDS/Redis/SQS/DynamoDB) são serviços
+    gerenciados da AWS com IP dinâmico, cuja segurança de rede já é feita
+    pelos Security Groups da VPC — uma camada mais adequada pra isso.
+    **Pegadinha real encontrada**: o VPC CNI do EKS sobe sozinho no bootstrap
+    do cluster como um add-on "implícito" (não aparece em
+    `aws eks list-addons`), e nesse modo o *enforcement* de NetworkPolicy vem
+    desligado — os CRDs e os objetos `NetworkPolicy` existiam, mas nada
+    traduzia isso em bloqueio de tráfego de fato (confirmado testando com um
+    pod em outro namespace, que conseguia chamar os serviços mesmo sem
+    permissão). Corrigido adotando o vpc-cni como `aws_eks_addon` gerenciado
+    pelo Terraform com `enableNetworkPolicy=true`. Revalidado depois: o mesmo
+    pod agora recebe timeout.
+  - **Prometheus + Grafana** (`terraform/modules/monitoring`, kube-prometheus-stack):
+    o ingress-nginx já expunha métricas Prometheus desde que foi instalado
+    (`controller.metrics.enabled=true`) e nada consumia isso — este módulo
+    liga essa ponta via um `ServiceMonitor` (`gitops/cluster-resources/`).
+    Sem Alertmanager nem storage persistente (Prometheus/Grafana usam o
+    padrão do chart, sem PVC) — objetivo é observabilidade ao vivo na
+    demonstração, não retenção histórica. Acesso via
+    `kubectl port-forward -n monitoring svc/kube-prometheus-stack-grafana 3000:80`
+    (sem Load Balancer, mesmo motivo do ArgoCD).
+  - **Node group EKS escalado de 2 para 3** (`t3.medium`): com
+    metrics-server + ingress-nginx + KEDA + o novo stack de monitoramento
+    rodando, 2 nós já deixavam quase nenhuma folga de pods (limite de
+    ENI/IP da instância, ~17 pods/nó — não é limite de CPU/memória) pro
+    HPA do evaluation-service ou o KEDA do analytics-service escalarem de
+    verdade durante a demonstração.
+
 Pendente:
 
 - [ ] **NLB do ingress-nginx**: a criação do Load Balancer está bloqueada pela AWS
