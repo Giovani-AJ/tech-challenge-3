@@ -11,7 +11,7 @@ spec:
     path: gitops/apps/targeting-service
   destination:
     server: https://kubernetes.default.svc
-    namespace: toggle-master
+    namespace: targeting-service
   syncPolicy:
     automated:
       prune: true

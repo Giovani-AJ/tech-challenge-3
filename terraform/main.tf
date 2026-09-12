@@ -2,7 +2,9 @@ locals {
   name_prefix   = "${var.project_name}-${var.environment}"
   secret_prefix = "${var.project_name}/${var.environment}"
   cluster_name  = "${local.name_prefix}-eks"
-  app_namespace = "toggle-master"
+  # Um namespace por microsserviço (requisito da Fase 2).
+  evaluation_namespace = "evaluation-service"
+  analytics_namespace  = "analytics-service"
 }
 
 module "network" {
@@ -188,6 +190,51 @@ module "argocd" {
   depends_on = [module.eks]
 }
 
+# --- Metrics Server (requisito da Fase 2: necessário pro HPA funcionar) ---
+
+module "metrics_server" {
+  source = "./modules/metrics-server"
+
+  depends_on = [module.eks]
+}
+
+# --- Ingress-nginx + NLB (requisito da Fase 2: acesso externo por path) ---
+
+module "ingress_nginx" {
+  source = "./modules/ingress-nginx"
+
+  depends_on = [module.eks]
+}
+
+# --- KEDA: autoscaling do analytics-service pela profundidade da fila SQS ---
+
+module "keda_irsa" {
+  source = "./modules/irsa"
+
+  role_name             = "${local.name_prefix}-keda-operator"
+  namespace             = "keda"
+  service_account_name  = "keda-operator"
+  oidc_provider_arn     = module.eks.oidc_provider_arn
+  oidc_provider_url     = module.eks.oidc_provider_url
+
+  policy_json = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["sqs:GetQueueAttributes"]
+      Resource = module.evaluation_queue.queue_arn
+    }]
+  })
+}
+
+module "keda" {
+  source = "./modules/keda"
+
+  irsa_role_arn = module.keda_irsa.role_arn
+
+  depends_on = [module.eks]
+}
+
 # --- IRSA dos microsserviços que falam direto com SQS/DynamoDB ---
 # (auth/flag/targeting só usam Postgres, cuja credencial já vem via ESO; não precisam de IRSA)
 
@@ -195,7 +242,7 @@ module "evaluation_service_irsa" {
   source = "./modules/irsa"
 
   role_name            = "${local.name_prefix}-evaluation-service"
-  namespace            = local.app_namespace
+  namespace            = local.evaluation_namespace
   service_account_name = "evaluation-service"
   oidc_provider_arn    = module.eks.oidc_provider_arn
   oidc_provider_url    = module.eks.oidc_provider_url
@@ -214,7 +261,7 @@ module "analytics_service_irsa" {
   source = "./modules/irsa"
 
   role_name            = "${local.name_prefix}-analytics-service"
-  namespace            = local.app_namespace
+  namespace            = local.analytics_namespace
   service_account_name = "analytics-service"
   oidc_provider_arn    = module.eks.oidc_provider_arn
   oidc_provider_url    = module.eks.oidc_provider_url

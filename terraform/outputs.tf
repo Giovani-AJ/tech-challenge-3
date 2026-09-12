@@ -63,3 +63,8 @@ output "analytics_service_irsa_role_arn" {
 output "eso_irsa_role_arn" {
   value = module.eso_irsa.role_arn
 }
+
+output "ingress_load_balancer_hostname" {
+  description = "Hostname do NLB do ingress-nginx (pode levar alguns minutos pra existir após o apply)"
+  value       = module.ingress_nginx.load_balancer_hostname
+}

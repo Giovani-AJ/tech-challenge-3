@@ -1,0 +1,21 @@
+# analytics-service só expõe /health via HTTP (o resto é consumidor de SQS em
+# background), mas o roteamento fica aqui pra manter o padrão dos outros 4.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: analytics-service
+  namespace: analytics-service
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - path: /analytics(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: analytics-service
+                port:
+                  number: 8005

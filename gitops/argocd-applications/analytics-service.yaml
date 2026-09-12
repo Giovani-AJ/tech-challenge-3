@@ -11,7 +11,14 @@ spec:
     path: gitops/apps/analytics-service
   destination:
     server: https://kubernetes.default.svc
-    namespace: toggle-master
+    namespace: analytics-service
+  # O KEDA é quem manda no numero de replicas a partir daqui (inclusive 0) —
+  # sem isso, o selfHeal do ArgoCD ficaria brigando com o KEDA.
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
   syncPolicy:
     automated:
       prune: true

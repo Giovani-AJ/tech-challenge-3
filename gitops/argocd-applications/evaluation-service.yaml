@@ -11,7 +11,14 @@ spec:
     path: gitops/apps/evaluation-service
   destination:
     server: https://kubernetes.default.svc
-    namespace: toggle-master
+    namespace: evaluation-service
+  # O HPA é quem manda no numero de replicas a partir daqui — sem isso, o
+  # selfHeal do ArgoCD ficaria brigando com o HPA pra voltar ao valor do git.
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
   syncPolicy:
     automated:
       prune: true

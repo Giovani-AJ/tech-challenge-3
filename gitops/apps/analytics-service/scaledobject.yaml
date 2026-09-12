@@ -1,0 +1,25 @@
+# Alternativa "recomendada para conta pessoal" citada na Fase 2: em vez de HPA
+# por CPU (proxy indireto), o KEDA escala o analytics-service direto pela
+# profundidade real da fila SQS — inclusive até 0 réplicas quando a fila está
+# vazia, e volta a subir assim que chega mensagem. Autentica na AWS usando a
+# identidade do próprio operator do KEDA (IRSA), sem precisar de
+# TriggerAuthentication nem chave de acesso.
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: analytics-service
+  namespace: analytics-service
+spec:
+  scaleTargetRef:
+    name: analytics-service
+  minReplicaCount: 0
+  maxReplicaCount: 5
+  cooldownPeriod: 60
+  pollingInterval: 15
+  triggers:
+    - type: aws-sqs-queue
+      metadata:
+        queueURL: "<SQS_QUEUE_URL>"
+        queueLength: "5"
+        awsRegion: "us-east-1"
+        identityOwner: operator

@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: analytics-config
-  namespace: toggle-master
+  namespace: analytics-service
 data:
   PORT: "8005"
   AWS_REGION: "us-east-1"

@@ -1,6 +1,37 @@
+# Um namespace por microsserviço (requisito explícito da Fase 2: "Crie sempre suas
+# aplicações separando por Namespaces"). Cada serviço é dono do seu, isolando RBAC,
+# quotas e o blast radius de um `kubectl delete namespace` acidental.
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: toggle-master
+  name: auth-service
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: flag-service
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: targeting-service
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: evaluation-service
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: analytics-service
   annotations:
     argocd.argoproj.io/sync-wave: "-2"

@@ -11,7 +11,7 @@ spec:
     path: gitops/apps/flag-service
   destination:
     server: https://kubernetes.default.svc
-    namespace: toggle-master
+    namespace: flag-service
   syncPolicy:
     automated:
       prune: true

@@ -11,7 +11,7 @@ spec:
     path: gitops/apps/auth-service
   destination:
     server: https://kubernetes.default.svc
-    namespace: toggle-master
+    namespace: auth-service
   syncPolicy:
     automated:
       prune: true

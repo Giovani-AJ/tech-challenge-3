@@ -1,5 +1,5 @@
-# Aplique esta primeiro (kubectl apply -f) — cria o namespace toggle-master e o
-# ClusterSecretStore que todos os ExternalSecret dos microsserviços dependem.
+# Aplique esta primeiro (kubectl apply -f) — cria os 5 namespaces (um por
+# microsserviço) e o ClusterSecretStore que todos os ExternalSecret dependem.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -13,7 +13,7 @@ spec:
     path: gitops/cluster-resources
   destination:
     server: https://kubernetes.default.svc
-    namespace: toggle-master
+    namespace: default
   syncPolicy:
     automated:
       prune: true
